@@ -11,7 +11,7 @@ OpenCV `cv2` para la captura y procesamiento de imágenes. El proyecto también 
 
 ## Configuración del entorno
 
-1. **Instalación de Anaconda**. Si no tienes Anonda instalado, puedes descargarlo e instalarlo desde [aqui](anaconda.com/products/navigator)
+1. **Instalación de Anaconda**. Si no tienes Anonda instalado, puedes descargarlo e instalarlo desde [aqui](https://www.anaconda.com/products/navigator)
 2. **Configuración del entorno virtual**. Una vez instalado Anaconda, abre una terminal (CMD, Git Bash, Power Shell, etc) y crea un nuevo entorno virtual para el proyec
 ```
 conda create --name venv python=3.8
