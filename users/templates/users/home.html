@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #2b5876, #4e4376);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 1.1rem;
+            color: #fff;
+            background-color: #4e4376;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: #3b2d61;
+        }
+
+        @media (max-width:600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .btn {
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bienvenido a FaceID</h1>
+        <!--<a href="{% url 'register' %}" class="btn">Registrar</a>-->
+        <a href="{% url 'login' %}" class="btn">Iniciar Sesión</a>
+    </div>
+</body>
+</html>
