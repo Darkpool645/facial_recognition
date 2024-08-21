@@ -1,9 +1,9 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('register/', views.register, name='register'),
-    path('register/success/', views.register_success, name='register_success'),
-    path('' ,views.home, name='home'),
+    path('', views.home, name='home'),
     path('login/', views.login, name='login'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

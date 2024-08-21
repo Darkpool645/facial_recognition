@@ -1,68 +1,45 @@
-import os
-#import glob
-#import cv2
-from django.conf import settings
-from django.shortcuts import render, redirect
+import cv2
+import numpy as np
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from ultralytics import YOLO
 
-#from users.models import User
-#from .forms import UserRegistrationForm
-# from roboflow import Roboflow
-
-#def register(request):
-#    if request.method == 'POST':
-#        form = UserRegistrationForm(request.POST)
-#        if form.is_valid():
-#            user = form.save()
-#            user_folder = os.path.join(settings.MEDIA_ROOT, user.name)
-
-            # Crear carpeta para almacenar las fotos si no existe
-#            os.makedirs(user_folder, exist_ok=True)
-
-            # Inicializar la cámara y capturar las fotos
-#            cam = cv2.VideoCapture(0)
-#            for i in range(500):
-#                ret, frame = cam.read()
-#                if not ret:
-#                    break
-#                img_name = os.path.join(user_folder, f'{user.name}_{i}.jpg')
-#                cv2.imwrite(img_name, frame)
-#            cam.release()
-
-            # Subir las fotos a Roboflow sin especificar la versión
-#            try:
-#                rf = Roboflow(api_key=settings.ROBOFLOW_API_KEY)
-#                project = rf.workspace(settings.ROBOFLOW_WORKSPACE).project(settings.ROBOFLOW_PROJECT)
-#                for image_path in glob.glob(os.path.join(user_folder, '*.jpg')):
-#                    project.upload(image_path, name=user.name)
-#                print(f'Fotos del usuario {user.name} subidas a Roboflow con éxito.')
-#            except Exception as e:
-#                print(f'Error al subir las fotos a Roboflow: {e}')
-#            finally:
-                # Eliminar la carpeta del usuario y todas las fotos
-#                if os.path.exists(user_folder):
-#                    for file in glob.glob(os.path.join(user_folder, '*')):
-#                        os.remove(file)
-#                    os.rmdir(user_folder)
-#                print(f'Carpeta del usuario {user.name} eliminada.')
-
-#            return redirect('register_success')
-#    else:
-#        form = UserRegistrationForm()
-#    return render(request, 'users/register.html', {'form': form})
-
-
-#def register_success(request):
-#    return render(request, 'users/register_success.html')
+model = YOLO('C:\\Users\\angel\\PycharmProjects\\facial_recognition\\utes_model.pt')
 
 
 def home(request):
     return render(request, 'users/home.html')
 
 
+@csrf_exempt
 def login(request):
-    img_path = os.path.join(settings.MEDIA_ROOT, 'temp_login.jpg')
-    try:
-        print('hola mundo')
-    except Exception as e:
-        return render(request, 'users/login.html', {'error': e})
-    return render(request, 'users/login.html')
+    if request.method == 'POST':
+        if 'image' not in request.FILES:
+            return JsonResponse({'error': 'Imagen no proporcionada'}, status=400)
+
+        image_file = request.FILES['image']
+        np_img = np.frombuffer(image_file.read(), np.uint8)
+        frame = cv2.imdecode(np_img, cv2.IMREAD_COLOR)
+
+        results = model.predict(source=frame)
+
+        detected_person = None
+        for result in results:
+            for box in result.boxes:
+                class_id = int(box.cls.item())
+                detected_person = model.names[class_id]
+                break
+        if detected_person:
+            return JsonResponse({
+                'mensaje': f'Hola, bienvenido {detected_person}!'
+            })
+        else:
+            return JsonResponse({
+                'mensaje': 'No se detectó a ninguna persona.'
+            })
+
+    elif request.method == 'GET':
+        return render(request, 'users/login.html')
+
+    return JsonResponse({'error': 'Método no permitido'}, status=405)

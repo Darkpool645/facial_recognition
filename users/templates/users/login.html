@@ -3,16 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Reconocimiento Facial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            position: relative;
+            text-align: center;
+            width: 90%;
+            max-width: 600px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        video {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            background-color: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .loader-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            border-radius: 10px;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #message {
+            margin-top: 20px;
+            color: #333;
+            font-size: 18px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Login</h1>
-    {% if error %}
-    <p style="color:red;">{{ error }}</p>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit">Iniciar Sesión</button>
-    </form>
+    <div class="container">
+        <video id="video" autoplay></video>
+        <button id="submitBtn" onclick="captureAndRecognize()">Iniciar Sesión</button>
+        <div id="message"></div>
+        <div class="loader-overlay" id="loaderOverlay">
+            <div class="loader"></div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error('Error al acceder a la cámara: ', err);
+            });
+
+        function captureAndRecognize() {
+            const loaderOverlay = document.getElementById('loaderOverlay');
+            const messageDiv = document.getElementById('message');
+            const submitBtn = document.getElementById('submitBtn');
+
+            loaderOverlay.style.display = 'flex';
+            messageDiv.style.display = 'none';
+            submitBtn.disabled = true;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob(blob => {
+                const formData = new FormData();
+                formData.append('image', blob, 'captured_image.jpg');
+
+                fetch('/login/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loaderOverlay.style.display = 'none';
+                    submitBtn.disabled = false;
+                    messageDiv.style.display = 'block';
+                    messageDiv.textContent = data.mensaje;
+                })
+                .catch(error => {
+                    loaderOverlay.style.display = 'none';
+                    submitBtn.disabled = false;
+                    messageDiv.style.display = 'block';
+                    messageDiv.textContent = 'Error al procesar la imagen.';
+                    console.error('Error:', error);
+                });
+            });
+        }
+    </script>
 </body>
 </html>
