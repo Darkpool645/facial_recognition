@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 5
+names: ['angel', 'carlos', 'omar', 'ulises', 'yexzari']
+
+roboflow:
+  workspace: utez-aufmm
+  project: face-detection-pwa1t
+  version: 4
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/utez-aufmm/face-detection-pwa1t/dataset/4
